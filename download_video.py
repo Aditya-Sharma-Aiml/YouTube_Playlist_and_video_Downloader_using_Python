@@ -45,7 +45,7 @@ def download_with_retry(stream, output_path, filename, max_tries=3):
             print(f"\n   Starting download ({attempt}/{max_tries}) -> {filename}")
             return stream.download(output_path=output_path, filename=filename)
         except Exception as e:
-            print("\n   ❌ Download error:", e)
+            print("\n   Download error:", e)
             if attempt == max_tries:
                 raise
 
@@ -60,10 +60,10 @@ def main():
     final_file = os.path.join(OUTPUT_DIR, base + ".mp4")
 
     if os.path.exists(final_file):
-        print("✅ Already exists:", final_file)
+        print(" Already exists:", final_file)
         return
 
-    # 1️⃣ Adaptive streams, but max 1080p (4K ko avoid kar rahe hain)
+    # 1️ Adaptive streams, but max 1080p (4K ko avoid kar rahe hain)
     try:
         print("\n🔹 Trying adaptive up to 1080p (stable best quality)...")
 
@@ -86,7 +86,7 @@ def main():
                     pass
 
         if not video_candidates:
-            print("⚠️ No adaptive video <=1080p found, going to progressive fallback...")
+            print("No adaptive video <=1080p found, going to progressive fallback...")
             raise RuntimeError("No suitable adaptive video")
 
         print("   Adaptive candidate resolutions (<=1080p):",
@@ -101,7 +101,7 @@ def main():
         )
 
         if not audio_best:
-            print("⚠️ No adaptive audio found, going to progressive fallback...")
+            print(" No adaptive audio found, going to progressive fallback...")
             raise RuntimeError("No adaptive audio")
 
         # Pehle best audio download
@@ -114,7 +114,7 @@ def main():
 
         video_success = False
         for v_stream in video_candidates:
-            print(f"\n   ▶ Trying video at {v_stream.resolution} ...")
+            print(f"\n    Trying video at {v_stream.resolution} ...")
             temp_video_name = base + f"_{v_stream.resolution}_video.mp4"
             temp_video = os.path.join(OUTPUT_DIR, temp_video_name)
 
@@ -122,18 +122,18 @@ def main():
                 download_with_retry(v_stream, OUTPUT_DIR, temp_video_name)
                 print()
 
-                print("🎬 Merging with ffmpeg...")
+                print(" Merging with ffmpeg...")
                 run_ffmpeg_merge(temp_video, temp_audio, final_file)
 
                 os.remove(temp_video)
                 os.remove(temp_audio)
 
-                print("✅ DONE (adaptive <=1080p):", final_file)
+                print(" DONE (adaptive <=1080p):", final_file)
                 video_success = True
                 break
 
             except Exception as e:
-                print(f"   ❌ Failed at {v_stream.resolution}:", e)
+                print(f" Failed at {v_stream.resolution}:", e)
                 # delete partial file if exists
                 if os.path.exists(temp_video):
                     os.remove(temp_video)
@@ -142,15 +142,15 @@ def main():
         if video_success:
             return
         else:
-            print("⚠️ All adaptive (<=1080p) failed, going to progressive fallback...")
+            print(" All adaptive (<=1080p) failed, going to progressive fallback...")
 
     except Exception as e:
-        print("\n⚠️ Adaptive method overall failed:")
+        print("\n Adaptive method overall failed:")
         print("   Type:", type(e).__name__)
         print("   Msg :", e)
-        print("👉 Falling back to progressive (720p max)...")
+        print(" Falling back to progressive (720p max)...")
 
-    # 2️⃣ Progressive fallback (simple + stable)
+    # 2️ Progressive fallback (simple + stable)
     try:
         yt2 = YouTube(VIDEO_URL, on_progress_callback=on_progress)
         p_stream = (
@@ -162,17 +162,17 @@ def main():
         )
 
         if p_stream is None:
-            print("❌ No progressive stream found. Cannot download this video.")
+            print(" No progressive stream found. Cannot download this video.")
             return
 
         print(f"   Fallback progressive stream: {p_stream.resolution}")
         download_with_retry(p_stream, OUTPUT_DIR, os.path.basename(final_file))
         print()
 
-        print("✅ DONE (progressive fallback):", final_file)
+        print(" DONE (progressive fallback):", final_file)
 
     except Exception as e:
-        print("❌ COMPLETE FAIL for this video")
+        print(" COMPLETE FAIL for this video")
         print("   Type:", type(e).__name__)
         print("   Msg :", e)
 
