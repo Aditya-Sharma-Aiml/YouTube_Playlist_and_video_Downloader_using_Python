@@ -3,8 +3,8 @@ import os
 import re
 import subprocess
 
-VIDEO_URL = "https://youtu.be/ogjf7ORKfd8?si=jcDKrLBKWfEODnHG"
-OUTPUT_DIR = r"D:\Python Dsa\Videos\recursion_playlist"
+VIDEO_URL = "https://youtu.be/bZObGhl7RAo?si=XFm_bjWAZ6tPC90D"
+OUTPUT_DIR = r"D:\perplexity_2.0"
 
 
 def safe_filename(title: str) -> str:
